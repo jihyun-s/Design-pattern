@@ -1,4 +1,4 @@
-* [Singleton](https://github.com/jihyun-s/Design-pattern/wiki/Design-pattern#singleton-%ED%8C%A8%ED%84%B4)
+* [Singleton](https://github.com/jihyun-s/Design-pattern/tree/main#singleton-%ED%8C%A8%ED%84%B4)
 
 
 ***
