@@ -1,7 +1,9 @@
 # Design Pattern
 * [Singleton](https://github.com/jihyun-s/Design-pattern/tree/main#singleton-%ED%8C%A8%ED%84%B4)
-* [Abstract Factory : 추상 팩토리](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#abstract-factory-%EC%B6%94%EC%83%81-%ED%8C%A9%ED%86%A0%EB%A6%AC)
-* [Factory Method : 팩토리 메서드](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#factory-method-%ED%8C%A9%ED%86%A0%EB%A6%AC-%EB%A9%94%EC%84%9C%EB%93%9C)
+* [Abstract Factory](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#abstract-factory-%EC%B6%94%EC%83%81-%ED%8C%A9%ED%86%A0%EB%A6%AC)
+* [Factory Method](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#factory-method-%ED%8C%A9%ED%86%A0%EB%A6%AC-%EB%A9%94%EC%84%9C%EB%93%9C)
+* [Prototype]()
+* [Builder]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -399,6 +401,313 @@ Abstract Factory | Factory Method
 다른 클래스의 객체를 만들기 위해 컴포지션(composition)을 사용해 책임을 위임 | 어떤 객체를 생성할지 결정하기 위해 서브클래스와 상속을 사용
 연관된 product들의 패밀리를 생성하는 것 | 하나의 product를 생성하기 위해 사용됨
 
+
+
+***
+## Prototype 프로토타입
+복사해서 인스턴스 만들기
+
+
+### 사용 목적과 용도
+클래스 이름을 지정하지 않고 인스턴스를 생성할 때도 있다. 다음와 같은 경우에는 클래스로부터 인스턴스를 만드느 것이 아니라 인스턴스를 복사해서 새로운 인스턴스를 만든다. 
+    - 종류가 너무 많아 클래스로 정리되지 않는 경우 
+    - 클래스로부터 인스턴스 생성이 어려운 경우 
+    - framework와 생성할 인스턴스를 분리하고 싶은 경우
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/Prototype.jpg" width="50%" height="50%" title="Prototype"></img>
+
+
+### 구현 코드
+패키지 | 이름 | 용도
+--|--|--
+framework | Product | 추상 메소드 use와 createClone이 선언되어 있는 인터페이스
+framework | Manager | createClone을 사용해서 인스턴스를 복제하는 클래스 
+Anonymous | MessageBox | 문자열을 테두리로 표시하는 클래스. use와 createClone을 구현
+Anonymous | UnderlinePen | 문자열에 밑줄을 표시하는 클래스. use와 createClone을 구현
+Anonymous | Main | 동작 테스트용 클래스 
+
+
+* Product 인터페이스 (Product.java) 
+```
+package framework; 
+
+public interface Product extends Cloneable {
+    public abstract void use(String s);
+    public abstract Product createClone(); 
+}
+```
+
+* Manager 클래스 (Manager.java) 
+```
+package framework;
+import java.util.*;
+
+public class Manager {
+    private HashMap showcase = new HashMap();
+    public void register(String name, Product proto) {
+        showcase.put(name, proto);
+    }
+    public Product create(String protoname) {
+        Product p = (Product)showcase.get(protoname);
+        return p.createClone();
+    }
+}
+```
+
+* MessageBox 클래스 (MessageBox.java) 
+```
+import framework.*;
+
+public class MessageBox implements Product {
+    private char decochar; 
+    public MesesageBox(char decochar) {
+        this.decochar = decochar;
+    }
+    public void use(String s) {
+        int length = s.getBytes().length;
+        for (int i=0; i<length+4; i++)
+            System.out.print(decochar);
+        System.out.println(" "); 
+        System.out.println(decochar + " " + s + " " + decochar);
+        for (int i=0; i<length+4; i++)
+            System.out.print(decochar);
+        System.out.println(" "); 
+    }
+    public Product createClone() {
+        Product p = null; 
+        try {
+            p = (Product)clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTree();
+        }
+        return p;
+    }
+}
+```
+
+
+* UnderlinePen 클래스 (UnderlinePen.java)
+```
+import framework.*;
+
+public class UnderlinePen implements Product {
+    private char ulchar; 
+    public UnderlinePen(char ulchar) {
+        this.ulchar = ulchar;
+    }
+    public void use(String s) {
+        int length = s.getBytes().length;
+        System.out.println("\"" + s + "\"");
+        System.out.println(" "); 
+        for(int i=0; i<length; i++) 
+            System.out.print(ulchar);
+        System.out.println(" "); 
+    }
+    public Product createClone() {
+        Product p = null; 
+        try {
+            p = (Product)clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTree();
+        }
+        return p;
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+import framework.*; 
+
+public class Main {
+    public static void main(String[] args) {
+        // 준비
+        Manager manager = new Manager();
+        UnderlinePen upen = new UnderlinePen('~');
+        MessageBox mbox = new MessageBox('-');
+        MessageBox sbox = new MessageBox('\'); 
+        manager.register("strong message", upen); 
+        manager.register("warning box", mbox);
+        manager.register("slash box", sbox);
+        
+        // 생성 
+        Product p1 = manager.create("strong message");
+        p1.use("Hello, world.");
+        Product p2 = manager.create("warning box");
+        p2.use("Hello, world.");
+        Product p3 = manager.create("slash box");
+        p3.use("Hello, world.");
+    }
+}
+```
+
+
++ clone 메소드는 피상적인 복사(shallow copy)를 실행한다. 참조만 복사될 뿐이고 배열의 요소 하나하나가 복사되는 것은 아니다. 또한 복사를 할 뿐이며 생성자를 호출하지 않는다.
+
+***
+## Builder 빌더 
+복잡한 인스턴스 조립하기 
+
+### 사용 목적과 용도
+* 복잡한 구조를 가지고 있는 경우 한 번에 완성시키기 어렵기 때문에 전체를 구성하고 있는 각 부분을 만들고 단계를 밟아 만들어 나간다. 
+* 구조를 가진 인스턴스를 쌓아 올리는데 그 과정의 상세한 사항이 Director 역할에 의해 감춰진다.
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/Builder.jpg" width="70%" height="70%" title="Builder"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|--
+Builder | 문서를 구성하기 위한 메소드를 결정하는 추상 클래스
+Director | 한 개의 문서를 만드는 클래스
+TextBuilder | 일반 텍스트(보통의 문자열)를 이용해서 문서를 만드는 클래스
+HTMLBuilder | HTML 파일을 이용해서 문서를 만드는 클래스
+Main | 동작 테스트용 클래스 
+
+
+* Builder 클래스 (Builder.java) - 문서를 만들 메소드들을 선언하고 있는 추상 클래스
+```
+public abstract class Builder {
+    public abstract void makeTitle(String title); 
+    public abstract void makeString(String str);
+    public abstract void makeItems(String[] items);
+    public abstract void close();
+}
+```
+
+
+* Director 클래스 (Director.java) 
+```
+public class Director {
+    private Builder builder;
+    public Director(Builder builder) {    // Builder의 하위 클래스의 인스턴스가 주어지므로 
+        this.builder = builder;           // builder 필드에 저장해 둔다.
+    }
+    public void construct() {                // 문서구축
+        builder.makeTitle("Greeting");       // 타이틀
+        builder.makeString("아침과 낮에");   // 문자열
+        builder.makeItems(new String[]{      // 개별 항목 
+            "좋은 아침입니다.",
+            "안녕하세요.",
+        });
+        builder.makeString("밤에");          // 별도의 문자열
+        builder.makeItems(new String[]{      // 별도의 개별 항목 
+            "안녕하세요.",
+            "안녕히주무세요.",
+            "안녕히계세요.",
+        )};
+        builder.close();                     // 문서를 완성시킨다
+    }
+}
+```
+
+
+* TextBuilder 클래스 (TextBuilder.java) 
+```
+public class TextBuilder extends Builder {
+    private StringBuffer buffer = new StringBuffer();       // 필드의 문서를 구축한다. 
+    public void makeTitle(String title) {                   // 일반 텍스트의 제목 
+        buffer.append("================================\n");   // 장식선
+        buffer.append("=" + title + "=\n");                 // == 사용한 제목 
+        buffer.append("\n");                                // 빈 행 
+    }
+    public void makeString(String str) {                    // 일반 텍스트에서의 문자열
+        buffer.append("-" + str + "\n");                    // - 사용한 문자열 
+        buffer.append("\n");                                // 빈 행 
+    }
+    public void makeItems(String[] items) {                 // 일반 텍스트에서의 개별항목 
+        for (int i=0; i<items.length; i++) 
+            buffer.append(" . " + itmes[i] + "\n");         // . 사용한 문자열 
+        buffer.append("\n");                                // 빈 행 
+    }
+    public void close() {                                   // 문서의 완성
+        buffer.append("================================\n");   // 장식선
+    }
+    public String getResult() {                             // 완성한 문서
+        return buffer.toString();                           // StringBuffer를 String으로 변환
+    }
+}
+```
+
+
+* HTMLBuilder 클래스 (HTMLBuilder.java) 
+```
+import java.io.*;
+
+public class HTMLBuilder extends Builder {
+    private String filename;                                // 작성할 파일명 
+    private PrintWriter writer;                             // 파일에 기술할 PrintWriter 
+    public void makeTitle(String title) {                   // HTML 파일에서의 제목 
+        filename = tilte + ".html";                         // 타이틀을 파일명으로 결정 
+        try {                                               // PrintWriter를 만든다.
+            writer = new PrintWriter(new FileWriter(filename));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        writer.println("<html><head><title>" + title + "</title></head></body>"); // 제목 출력
+        writer.println("<h1>" + title + "</h1>"):
+    }
+    public void makeString(String str) {                    // HTML 파일에서의 문자열
+        writer.println("<p>" + str + "</p>");               // <p> 태그로 출력
+    }
+    public void makeItems(String[] items) {                 // HTML 파일에서의 개별항목 
+        writer.println("<ul>");                             // <ul>과 <li>로 출력
+        for (int i=0; i<items.length; i++)
+            writer.println("<li>" + items[i] + "</li>"); 
+        writer.println("</ul>");
+    }
+    public void close() {                                   // 문서의 완성
+        writer.println("</body></html>");                   // 태그를 닫는다
+        writer.close();                                     // 파일을 닫는다
+    }
+    public String getResult() {                             // 완성한 문서
+        return filename;                                    // 파일명을 반환한다
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        if(args.length != 1) {
+            usage();
+            System.exit(0); 
+        }
+        if(args[0].equals("plain")) {
+            TextBuilder textbuilder = new TextBuilder(); 
+            Director director = new Director(textbuilder); 
+            director.construct();
+            String result = textbuilder.getResult(); 
+            System.out.println(result);
+        }
+        else if(args[0].equals("html")) {
+            HTMLBuilder htmlbuilder = new HTMLBuilder(); 
+            Director director = new Director(htmlbuilder); 
+            director.construct();
+            String filename = htmlbuilder.getResult(); 
+            System.out.println(filename + "가 작성되었습니다.");
+        }
+        else {
+            usage();
+            System.exit(0); 
+        }
+    }
+    public static void usage() {
+        System.out.println("Usage: Java Main plain 일반 텍스트로 문서작성");
+        System.out.println("Usage: Java Main html  HTML 파일로 문서작성");
+    }
+}
+```
+
+
+***
 ## Reference 
 - Java 언어로 배우는 디자인 패턴 입문 
 - Chapter 3. 팩토리(Factory) 패턴(https://blog.naver.com/anciid/221793735687)
