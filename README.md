@@ -2,8 +2,8 @@
 * [Singleton](https://github.com/jihyun-s/Design-pattern/tree/main#singleton-%ED%8C%A8%ED%84%B4)
 * [Abstract Factory](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#abstract-factory-%EC%B6%94%EC%83%81-%ED%8C%A9%ED%86%A0%EB%A6%AC)
 * [Factory Method](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#factory-method-%ED%8C%A9%ED%86%A0%EB%A6%AC-%EB%A9%94%EC%84%9C%EB%93%9C)
-* [Prototype]()
-* [Builder]()
+* [Prototype](https://github.com/jihyun-s/Design-pattern#prototype-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
+* [Builder](https://github.com/jihyun-s/Design-pattern#builder-%EB%B9%8C%EB%8D%94)
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
