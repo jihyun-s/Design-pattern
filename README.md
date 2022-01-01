@@ -4,8 +4,8 @@
 * [Factory Method](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#factory-method-%ED%8C%A9%ED%86%A0%EB%A6%AC-%EB%A9%94%EC%84%9C%EB%93%9C)
 * [Prototype](https://github.com/jihyun-s/Design-pattern#prototype-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
 * [Builder](https://github.com/jihyun-s/Design-pattern#builder-%EB%B9%8C%EB%8D%94)
-* [Adapter]()
-* [Bridge]()
+* [Adapter](https://github.com/jihyun-s/Design-pattern#adapter-%EC%96%B4%EB%8C%91%ED%84%B0)
+* [Bridge](https://github.com/jihyun-s/Design-pattern#bridge-%EB%B8%8C%EB%A6%BF%EC%A7%80)
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
