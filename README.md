@@ -4,6 +4,8 @@
 * [Factory Method](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#factory-method-%ED%8C%A9%ED%86%A0%EB%A6%AC-%EB%A9%94%EC%84%9C%EB%93%9C)
 * [Prototype](https://github.com/jihyun-s/Design-pattern#prototype-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
 * [Builder](https://github.com/jihyun-s/Design-pattern#builder-%EB%B9%8C%EB%8D%94)
+* [Adapter]()
+* [Bridge]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -702,6 +704,234 @@ public class Main {
     public static void usage() {
         System.out.println("Usage: Java Main plain 일반 텍스트로 문서작성");
         System.out.println("Usage: Java Main html  HTML 파일로 문서작성");
+    }
+}
+```
+
+***
+## Adapter 어댑터
+바꿔서 재이용하기
+
+### 사용 목적과 용도
+* 이미 제공되어 있는 것을 그대로 사용할 수 없을 때, '이미 제공되어 있는 것'과 '필요한 것' 사이의 차이를 없애주는 패턴 
+* Wrapper 패턴으로 불리기도 함
+
+### 클래스 다이어그램 
+* 상속을 사용한 Adapter 패턴
+
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/adapter_class.jpg" width="70%" height="70%" title="Adapter-class"></img>
+* 위임을 사용한 Adapter 패턴
+
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/adapter_instance.jpg" width="70%" height="70%" title="Adapter-instance"></img>
+
+
+### 구현 코드 
+#### 상속을 사용한 Adapter 패턴
+
+. | 예제 프로그램 
+ --|--
+ 제공되고 있는 것 | Banner 클래스(showWithParen, showWithAster)
+ 교환장치 | PrintBanner 클래스
+ 필요한 것 | Print 인터페이스 (printWeak, PrintStrong) 
+
+
+* Banner 클래스(Banner.java) - 미리 제공되어 있는 클래스
+```
+public class Banner {
+    private String string;
+    public Banner(String string) {
+        this.string = string;
+    }
+    public void showWithParen() {
+        System.out.println("(" + string + ")"); 
+    }
+    public void showWithAster() {
+        System.out.println("*" + string + "*"); 
+    }
+}
+```
+
+* Print 인터페이스 (Print.java) - 필요로 하는 인터페이스
+```
+public interface Print {
+    public abstract void printWeak(); 
+    public abstract void printStrong(); 
+}
+```
+
+* PrintBanner 클래스 (PrintBanner.java) - 어댑터 역할 
+```
+public class PrintBanner extends Banner implements Print {
+    public PrintBanner(String string) {
+        supter(string);
+    }
+    public void printWeak() {
+        showWithParen();
+    }
+    public void printStrong() {
+        showWithAster();
+    }
+}
+```
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        Print p = new PrintBanner("Hello"); 
+        p.printWeak(); 
+        p.printStrong(); 
+    }
+}
+```
+
+#### 위임을 사용한 Adapter 패턴
+Main 클래스, Banner 클래스는 위와 동일 
+
+* Print 클래스 (Print.java)
+```
+public abstract class Print {
+    public abstract void printWeak();
+    public abstract void printStrong();
+}
+```
+
+* PrintBanner 클래스 (PrintBanner.java) 
+```
+public class PrintBanner extends Print {
+    private Banner banner; 
+    public PrintBanner(String string) {
+        this.banner = new Banner(string); 
+    }
+    public void printWeak() {
+        banner.showWithParen();
+    }
+    public void printStrong() {
+        banner.showWithAster();
+    }
+}
+```
+
+***
+## Bridge 브릿지
+기능 계층과 구현 계층 분리하기
+
+### 사용 목적과 용도
+* '기능의 클래스 계층'과 '구현의 클래스 계층'을 두 개의 독립된 클래스 계층으로 분리하고, 두 계층 사이에 다리를 놓는 일
+* 새로운 기능을 추가하고 싶은 경우 - 클래스 상속
+* 새로운 구현을 추가하고 싶은 경우 - 추상 클래스 구현  
+
+### 클래스 다이어그램   
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/bridge.jpg" width="40%" height="40%" title="Abstract factory"></img>
+
+### 구현 코드 
+* 기능의 클래스 계층
+
+
+이름 | 용도 
+--|-- 
+Display | '표시한다'는 클래스 
+CountDisplay | '지정 횟수만큼 표시한다'는 기능을 추가하는 클래스 
+
+* 구현의 클래스 계층   
+
+
+이름 | 용도 
+--|--
+DisplayImpl | '표시한다'는 클래스 
+StringDisplayImpl | '문자열을 사용해서 표시한다'는 클래스 
+
+
+* Display 클래스 (Display.java) - 기능의 클래스 계층
+impl 필드가 두 클래스 계층의 다리가 된다.
+```
+public class Display {
+    private DisplayImpl impl; 
+    public Display(DisplayImpl impl) {
+        this.impl = imp1;
+    }
+    public void open() {
+        impl.rawOpen();
+    }
+    public void print() {
+        impl.rawPrint();
+    }
+    public void close() {
+        impl.rawClose();
+    }
+    public final void display() {
+        open();
+        print();
+        close();
+    }
+}
+```
+
+* CountDisplay 클래스 (CountDisplay.java) - 기능의 클래스 계층 
+```
+public class CountDisplay extends Display {
+    public CountDisplay(DisplayImpl impl) {
+        super(impl);
+    }
+    pulbic void multiDisplay(int times) {       // times회 반복해서 표시한다.
+        open(); 
+        for(int i=0; i<times; i++) {
+            print();
+        }
+        close();
+    }
+}
+```
+
+* DisplayImpl 클래스 (DisplayImpl.java) - 구현의 클래스 계층 
+```
+public abstract class DisplayImpl {
+    public abstract void rawOpen(); 
+    public abstract void rawPrint(); 
+    public abstract void rawClose();
+}
+```
+
+* StringDisplayImpl 클래스 (StringDisplayImpl.java) - 구현의 클래스 계층 
+```
+public class StringDisplayImpl extends DisplayImpl {
+    private String string;                            // 표시해야 할 문자열
+    private int width;                                // 바이트 단위로 계산할 문자열의 길이 
+    public StrinigDisplayImpl(String string) {        // 생성자에서 전달된 문자열 string을 
+        this.string = string;                         // 필드에 기억해둔다. 
+        this.width = string.getBytes().length;        // 그리고 바이트 단위의 길이도 필드에 기억해두고 나중에 사용한다.
+    }
+    public void rawOpen() {
+        printLine();
+    }
+    public void rawPrint() {
+        System.out.println("|" + string + "|");       // 앞뒤에 "|"를 붙여서 표시한다.
+    }
+    public void rawClose() {
+        printLine();
+    }
+    private void printLine() {
+        System.out.println("+");                      // 테두리의 모서리를 표현
+        for(int i=0; i<width; i++) {                  // width개의 "-"를 표시해서 
+            System.out.println("-");                  // 테두리 선으로 이용한다.
+        }
+        System.out.println("+");                      // 테두리의 모서리를 표현
+    }
+}
+```
+
+* Main 클래스 (Main.java)
+```
+public class Main {
+    public static void main(String[] args) {
+        Display d1 = new Display(new StringDisplayImpl("Hello, Korea.")); 
+        Display d2 = new CountDisplay(new StringDisplayImpl("Hello, World."));
+        CountDisplay d3 = new CountDisplay(new StringDisplayImpl("Hello, Universe.")); 
+        
+        d1.display();
+        d2.display(); 
+        d3.display();
+        d3.multiDisplay(5);
     }
 }
 ```
