@@ -6,6 +6,8 @@
 * [Builder](https://github.com/jihyun-s/Design-pattern#builder-%EB%B9%8C%EB%8D%94)
 * [Adapter](https://github.com/jihyun-s/Design-pattern#adapter-%EC%96%B4%EB%8C%91%ED%84%B0)
 * [Bridge](https://github.com/jihyun-s/Design-pattern#bridge-%EB%B8%8C%EB%A6%BF%EC%A7%80)
+* [Composite]()
+* [Decorator]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -936,6 +938,299 @@ public class Main {
 }
 ```
 
+
+***
+## Composite
+그릇과 내용물을 동일시하기
+
+
+### 사용 목적과 용도
+그릇과 내용물을 동일시해서 재귀적인 구조를 만들기 위한 디자인 패턴 (ex. directory)
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/composite.jpg" width="50%" height="50%" title="Composite"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Entry | File과 Directory를 동일시하는 추상 클래스
+File | file을 나타내는 클래스
+Directory | directory를 나타내는 클래스 
+FileTreatmentException | 파일에 Entry를 추가하려고 할 때 발생하는 예외 클래스 
+Main | 동작 테스트용 클래스 
+
+
+* Entry 클래스 (Entry.java) 
+```
+public abstract class Entry {
+    public abstract String getName();                          // 이름을 얻는다. 
+    public abstract int getSize();                             // 크기를 얻는다. 
+    public Entry add(Entry entry) throws FileTreatmentException {
+        throw new FileTreatmentException();                    // 엔트리를 추가한다.
+    }
+    public void printList() {
+        printList(" "); 
+    }
+    protected abstract void printList(String prefix);          // prefix를 앞에 붙여서 종류를 표시한다. 
+    public String toString() {
+        return getName() + " (" + getSize() + ")";
+    }
+}
+```
+
+
+* File 클래스 (File.java) 
+```
+public class File extends Entry {
+    private String name; 
+    private int size; 
+    public File(String name, int size) {
+        this.name = name;
+        this.size = size; 
+    }
+    public String getName() {
+        return name; 
+    }
+    public int getSize() {
+        return size; 
+    }
+    protected void printList(String prefix) {
+        System.out.println(prefix + "/" + this); 
+    }
+}
+```
+
+
+* Directory 클래스 (Directory.java) 
+```
+import java.util.Iterator;
+import java.util.ArrayList; 
+
+public class Directory extends Entry {
+    private String name; 
+    private ArrayList directory = new ArrayList(); 
+    public Directory(String name) {
+        this.name = name; 
+    }
+    public String getName() {
+        return name;
+    }
+    public int getSize() {
+        int size = 0; 
+        Iterator it = directory.iterator(); 
+        while(it.hasNext()) {
+            Entry entry = (Entry)it.next(); 
+            size += entry.getSize();
+        }
+        return size; 
+    }
+    public Entry add(Entry entry) {
+        directory.add(entry); 
+        return this;
+    }
+    protected void printList(String prefix) {               // 엔트리의 종류
+        System.out.println(prefix + "/" + this);
+        Iterator it = directory.iterator(); 
+        while(it.hasNext()) {
+            Entry entry = (Entry)it.next();
+            entry.printList(prefix + "/" + name);
+        }
+    }
+}
+```
+
+* FileTreatmentException 클래스 (FileTreatmentException.java)
+```
+public class FileTreatmentException extends RuntimeException {
+    public FileTreatmentException() {
+    }
+    public FileTreatmentException(String msg) {
+        super(msg);
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        try {
+            System.out.println("Making root entries..."); 
+            Directory rootdir = new Directory("root"); 
+            Directory bindir = new Directory("bin"); 
+            Directory tmpdir = new Directory("tmp"); 
+            Directory usrdir = new Directory("usr"); 
+            rootdir.add(bindir); 
+            rootdir.add(tmpdir);
+            rootdir.add(usrdir);
+            bindir.add(new File("vi", 10000));
+            bindir.add(new File("latex", 20000)); 
+            rootdir.printList();
+        } catch (FileTreatmentException e) {
+            e.printStackTrace(); 
+        }
+    }
+}
+```
+
+
+
+***
+## Decorator
+장식과 내용물을 동일시하기 
+
+
+### 사용 목적과 용도
+오브젝트에 장식을 해 나가는 디자인 패턴 
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/decorator.jpg" width="35%" height="35%" title="Decorator"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Display | 문자열 표시용 추상 클래스
+StringDisplay | 1행으로 구성된 문자열 표시용 클래스
+Border | 장식을 나타내는 클래스
+SideBorder | 좌우에 장식을 붙이는 클래스 
+FullBorder | 상하좌우에 장식을 붙이는 클래스 
+Main | 동작 테스트용 클래스
+
+
+* Display 클래스 (Display.java)
+```
+public abstract class Display {
+    public abstract int getColumns();        // 가로 문자수를 얻는다. 
+    public abstract int getRows();           // 세로 행수를 얻는다. 
+    public abstract String getRowText(int row); // row번째의 문자열을 얻는다.
+    public final void show() {               // 전부 표시한다. 
+        for (int i=0; i<getRows(); i++) {
+            System.out.println(getRowText(i)); 
+        }
+    }
+}
+```
+
+
+* StringDisplay 클래스 (StringDisplay.java)
+```
+public class StringDisplay extends Display {
+    private String string;                      // 표시 문자열
+    public StringDisplay(String string) {       // 인수로 표시 문자열을 지정
+        this.string = string; 
+    }
+    public int getColumns() {                   // 문자수
+        return string.getBytes().length;
+    }
+    public int getRows() {                      // 행수는 1 
+        return 1; 
+    }
+    public String getRowText(int row) {         // row가 0일 때만 반환
+        if (row == 0) {
+            return string;
+        } else {
+            return null;
+        }
+    }
+}
+```
+
+
+* Border 클래스 (Border.java) 
+```
+public abstract class Border extends Display {
+    protected Display display;               // 이 장식이 둘러싸고 있는 내용물 
+    protected Border(Display display) {      // 인스턴스 생성시에 내용물을 인수로 지정
+        this.display = display; 
+    }
+}
+```
+
+
+* SideBorder 클래스 (SideBorder.java)
+```
+public class SideBorder extends Border {
+    private char borderChar;                    // 장식이 되는 문자 
+    public SideBorder(Display display, char ch) { // 생성자에서 Display라는 장식 문자를 지정
+        super(display); 
+        this.borderChar = ch; 
+    }
+    public int getColumns() {                   // 문자수는 내용물의 양쪽에 장식 문자수를 더한 것 
+        return 1 + display.getColumns() + 1; 
+    }
+    public int getRows() {                      // 행수는 내용물의 행수와 동일
+        return display.getRows(); 
+    }
+    public String getRowText(int row) {         // 지정된 행의 내용은 내용물의 지정된 행의 양쪽에 장식 문자를 붙인 것 
+        return borderChar + display.getRowText(row) + borderChar; 
+    }
+}
+```
+
+* FullBorder 클래스 (FullBorder.java)
+```
+public class FullBorder extends Border {
+    public FullBorder(Display display) {
+        super(display);
+    }
+    public int getColumns() {                   // 문자수는 내용물의 양쪽에 좌우의 장식 문자수를 더한 것
+        return 1 + display.getColumns() + 1; 
+    }
+    public int getRows() {                      // 행수는 내용물의 행수에 상하의 장식문자수를 더한 것
+        return 1 + display.getRows() + 1; 
+    }
+    public String getRowText(int row) {         // 지정한 행의 내용 
+        if(row == 0) {                          // 장식의 상단
+            return "+" + makeLine('-', display.getColumns()) + "+"; 
+        } else if (row == display.getRows() + 1) { // 장식의 하단 
+            return "+" + makeLine('-', display.getColumns()) + "+"; 
+        } else {                                // 그 외
+            return "|" + display.getRowText(row - 1) + "|"; 
+        }
+    }
+    private String makeLine(char ch, int count) { // 문자 ch를 count개 연속시킨 문자열을 만든다.
+        StringBuffer buf = new StringBuffer(); 
+        for (int i=0; i<count; i++) {
+            buf.append(ch); 
+        }
+        return buf.toString();
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        Display b1 = new StringDisplay("Hello, world"); 
+        Display b2 = new SideBorder(b1, '#'); 
+        Display b3 = new FullBorder(b2); 
+        b1.show();
+        b2.show();
+        b3.show();
+        Display b4 = new SideBorder( 
+                        new FullBorder(
+                           new FullBorder(
+                              new SideBorder(
+                                 new FullBorder(
+                                    new StringDisplay("안녕하세요.")
+                                 ),
+                                 '*'
+                              )
+                           )
+                        ),
+                        '/'
+                     ); 
+        b4.show(); 
+    }
+}
+```
 
 ***
 ## Reference 
