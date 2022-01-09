@@ -6,8 +6,8 @@
 * [Builder](https://github.com/jihyun-s/Design-pattern#builder-%EB%B9%8C%EB%8D%94)
 * [Adapter](https://github.com/jihyun-s/Design-pattern#adapter-%EC%96%B4%EB%8C%91%ED%84%B0)
 * [Bridge](https://github.com/jihyun-s/Design-pattern#bridge-%EB%B8%8C%EB%A6%BF%EC%A7%80)
-* [Composite]()
-* [Decorator]()
+* [Composite](https://github.com/jihyun-s/Design-pattern#composite)
+* [Decorator](https://github.com/jihyun-s/Design-pattern#decorator)
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
