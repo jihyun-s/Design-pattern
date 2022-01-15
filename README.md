@@ -8,8 +8,8 @@
 * [Bridge](https://github.com/jihyun-s/Design-pattern#bridge-%EB%B8%8C%EB%A6%BF%EC%A7%80)
 * [Composite](https://github.com/jihyun-s/Design-pattern#composite)
 * [Decorator](https://github.com/jihyun-s/Design-pattern#decorator)
-* [Facade]() 
-* [Flyweight]()
+* [Facade](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#facade) 
+* [Flyweight](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#flyweight)
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
