@@ -8,6 +8,8 @@
 * [Bridge](https://github.com/jihyun-s/Design-pattern#bridge-%EB%B8%8C%EB%A6%BF%EC%A7%80)
 * [Composite](https://github.com/jihyun-s/Design-pattern#composite)
 * [Decorator](https://github.com/jihyun-s/Design-pattern#decorator)
+* [Facade]() 
+* [Flyweight]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -1231,6 +1233,268 @@ public class Main {
     }
 }
 ```
+***
+## Facade
+단순한 창구  
+
+
+### 사용 목적과 용도
+내부적으로 복잡하게 얽혀있는 것을 정리해서 시스템 외부에 단순한 인터페이스(API)를 제공한다.
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/facade.png" width="55%" height="55%" title="Facade"></img>
+
+
+### 구현 코드
+패키지 | 이름 | 용도 
+--|--|--
+pagemaker | Database | 메일 주소에서 사용자 이름을 얻는 클래스 
+pagemaker | HtmlWriter | HTML 파일을 작성하는 클래스 
+pagemaker | PageMaker | 메일 주소에서 사용자의 웹 페이지를 작성하는 클래스 - facade 역할 
+
+
+* Database 클래스 (Database.java) 
+```
+package pagemaker; 
+
+import java.io.FileInputStream; 
+import java.io.IOException; 
+import java.util.Porperties; 
+
+public class Database {
+    private Database() {      // new로 인스턴스를 생성시키지 않기 위한 private 선언 
+    }
+    public static Properties getProperties(String dbname) {       // 데이터베이스 이름에서 Properties를 얻는다
+        String filename = dbname + ".txt"; 
+        Properties prop = new Properties(); 
+        try {
+            prop.load(new FileInputStream(filename)); 
+        } catch (IOException e) {
+            Systme.out.println("Warning : " + filename + " is not found."); 
+        }
+        return prop; 
+    }
+}
+```
+
+
+* 데이터 파일 (maildata.txt) 
+```
+youngjin@youngjin.com=Youngjin 
+kim@youngjin=Kim 
+lee@youngjin=Lee
+park@youngjin=Park
+```
+
+
+* HtmlWriter 클래스 (HtmlWriter.java) - title()를 제일 먼저 호출해야 하는 제약이 있음 
+```
+package pagemaker; 
+
+import java.io.Writer; 
+import java.io.IOException; 
+
+public class HtmlWriter {
+    private Writer writer; 
+    public HtmlWriter(Writer writer) {
+        this.writer = writer; 
+    }
+    public void title(String title) throws IOException {       // 타이틀 출력
+        writer.write("<html>"); 
+        writer.write("<head>"); 
+        writer.write("<title>" + title + "</title>");
+        writer.write("</head>");
+        writer.write("<body>\n"); 
+        writer.write("<h1>" + title + "</h1>\n"); 
+    }
+    public void paragraph(String msg) throws IOException {     // 단락 출력
+        writer.write("<p>" + msg + "</p>\n"); 
+    }
+    public void link(String href, String caption) throws IOException {     // 링크 출력
+        writer.write("<a href=\"" + href + "\">" + caption + "</a>");
+    }
+    public void mailto(String mailaddr, String username) throws IOException {    // 메일 주소 출력 
+        link("mailto:" + mailaddr, username); 
+    }
+    public void close() throws IOException {       // 닫는다.
+        writer.write("</body>"); 
+        writer.write("</html>\n"); 
+        writer.close(); 
+    }
+}
+```
+
+
+* PageMaker 클래스 (PageMaker.java) 
+```
+package pagemaker; 
+
+import java.io.FileWriter; 
+import java.io.IOException; 
+import java.util.Properties; 
+
+public class PageMaker {
+    private PageMaker() {        // 인스턴스는 만들지 않기 때문에 private 선언한다
+    }
+    public static void makeWelcomePage(String mailaddr, String filename) {
+        try {
+            Properties mailprop = Database.getProperties("maildata"); 
+            String username = mailprop.getProperty(mailaddr); 
+            HtmlWriter writer = new HtmlWriter(new FileWriter(filename)); 
+            writer.title("Welcome to " + username + " 's page!");
+            writer.paragraph(username + "의 페이지에 오신 걸 환영합니다."); 
+            writer.paragraph("메일을 기다리고 있습니다."); 
+            writer.mailto(mailaddr, username); 
+            writer.close(); 
+            System.out.println(filename + " is created for " + mailaddr + " (" + username + ")");
+        } catch (IOException e) {
+            e.printStackTree(); 
+        }
+    }
+}
+
+```
+
+
+* Main 클래스 (Main.java) 
+```
+import pagemaker.PageMaker; 
+
+public class Main {
+    public static void main(String[] args) {
+        PageMaker.makeWelcomePage("youngjin@youngjin.com ", "welcome.html"); 
+    }
+}
+
+```
+
+***
+## Flyweight
+동일한 것을 공유해서 낭비 없애기  
+
+
+### 사용 목적과 용도
+오브젝트(객체)가 적은 메모리를 사용하도록 하기 위함. 인스턴스를 가능한 공유시켜서 쓸데없이 new하지 않도록 한다.
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/flyweight.png" width="25%" height="25%" title="Flyweight"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|--
+BigChar | 큰 문자를 나타내는 클래스 
+BigCharFactory | BigChar의 인스턴스를 공유하면서 생성하는 클래스
+BigString | BigChar를 모아서 만든 큰 문자열을 나타내는 클래스 
+
+
+* BigChar 클래스 (BigChar.java) 
+```
+import java.io.BufferedReader; 
+import java.io.FileReader; 
+import java.io.IOException; 
+
+public class BigChar {
+    // 문자의 이름 
+    private char charname; 
+    // 큰 문자를 표현하는 문자열 ('#' '.' '\n'의 열) 
+    private String fontdata; 
+    // 생성자 
+    public BigChar(char charname) {
+        this.charname = charname; 
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("big" + charname + ".txt"); 
+            String line; 
+            StringBuffer buf = new StringBuffer(); 
+            while ((line = reader.readLine()) != null) {
+                buf.append(line); 
+                buf.append("\n"); 
+            }
+            reader.close(); 
+            this.fontdata = buf.toString();
+        } catch(IOException e) {
+            this.fontdata = charname + "?"; 
+        }
+    }
+    // 큰 문자를 표현한다. 
+    public void print() {
+        System.out.print(fontdata);
+    }
+}
+```
+
+
+* BigCharFactory 클래스 (BigCharFactory.java) 
+```
+import java.util.HashMap; 
+
+public class BigCharFactory {
+    // 이미 만들어진 BigChar의 인스턴스를 관리 
+    private HashMap pool = new HashMap(); 
+    // Singleton 패턴
+    private static BigCharFactory singleton = new BigCharFactory(); 
+    // 생성자
+    private BigCharFactory() {
+    }
+    // 유일한 인스턴스를 얻는다
+    public static BigCharFactory getInstance() {
+        return singleton;
+    }
+    // BigChar의 인스턴스 생성(공유) 
+    public synchronized BigChar getBigChar(char charname) {
+        BigChar bc = (BigChar)pool.get("" + charname); 
+        if(bc == null) {
+            bc = new BigChar(charname);      // 인스턴스 생성 
+            pool.put("" + charname, bc); 
+        }
+        return bc; 
+    }
+}
+
+```
+
+
+* BigString 클래스 (BigString.java)
+```
+public class BigString {
+    // 큰 문자의 배열
+    private BigChar[] bigchars; 
+    // 생성자 
+    public BigString(String string) {
+        bigchars = new BigChar[string.length()]; 
+        BigCharFactory factory = BigCharFactory.getInstance();
+        for(int i=0; i<bigchars.length; i++) {
+            bigchars[i] = factory.getBigChar(string.charAt(i)); 
+        }
+    }
+    // 표시 
+    public void print() {
+        for(int i=0; i<bigchars.length; i++) {
+            bigchars[i].print(); 
+        }
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        if(args.length == 0) {
+            System.out.println("Usage: java Main digits"); 
+            System.out.println("Example: java Main 1212123"); 
+            System.exit(0);
+        }
+        BigString bs = new BigString(args[0]); 
+        bs.print(); 
+    }
+}
+```
+
+
 
 ***
 ## Reference 
