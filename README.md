@@ -10,7 +10,7 @@
 * [Decorator](https://github.com/jihyun-s/Design-pattern#decorator)
 * [Facade](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#facade) 
 * [Flyweight](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#flyweight)
-* [Proxy]()
+* [Proxy](https://github.com/jihyun-s/Design-pattern#proxy)
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
