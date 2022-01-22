@@ -10,6 +10,7 @@
 * [Decorator](https://github.com/jihyun-s/Design-pattern#decorator)
 * [Facade](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#facade) 
 * [Flyweight](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#flyweight)
+* [Proxy]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -1493,7 +1494,120 @@ public class Main {
     }
 }
 ```
+***
 
+## Proxy
+필요해지면 만들기 
+
+
+### 사용 목적과 용도
+실제로 실행하는 단계가 되었을 때(필요할 때) Proxy클래스가 RealSubject 인스턴스를 생성함. 
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/proxy.png" width="70%" height="70%" title="Proxy"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Printer | 이름있는 프린터를 나타내는 클래스(본인) 
+Printable | Printer와 PrinterProxy 공통의 인스턴스 
+PrinterProxy | 이름있는 프린터를 나타내는 클래스(대리인) 
+
+
+
+* Printer 클래스 (Printer.java) 
+```
+public class Printer implements Printable {
+    private String name; 
+    public Printer() {
+        heavyJob("Printer의 인스턴스를 생성 중"); 
+    }
+    public Printer(String name) {
+        this.name = name; 
+        heavyJob("Printer의 인스턴스 (" + name + ")을 생성 중"); 
+    }
+    public void setPrinterName(String name) {
+        this.name = name; 
+    }
+    public String getPrinterName() {
+        return name; 
+    }
+    public void print(String string) {
+        System.out.println("=== " + name + " ==="); 
+        System.out.println(string); 
+    }
+    private void heavyJob(String msg) {
+        System.out.print(msg); 
+        for (int i=0; i<5; i++) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            System.out.print(".");
+        }
+        System.out.println("완료."); 
+    }
+}
+```
+
+
+* Printable 인터페이스 (Printable.java)
+```
+public interface Printable {
+    public abstract void setPrinterName(String name); 
+    public abstract String getPrinterName(); 
+    public abstract void print(String string); 
+}
+```
+
+
+* PrinterProxy 클래스 (PrinterProxy.java)
+```
+public class PrinterProxy implements Printable {
+    private String name; 
+    private Printer real; 
+    public PrinterProxy() {
+    }
+    public PrinterProxy(String name) {
+         this.name = name; 
+    }
+    public synchronized void setPrinterName(String name) {
+        if (real != null) {
+            real.setPrinterName(name);
+        }
+        this.name = name; 
+    }
+    public String getPrinterName() {
+        return name;
+    }
+    public void print(String string) {
+        realize(); 
+        real.print(string);
+    }
+    private synchronized void realize() {
+        if (real == null) {
+            real = new Printer(name); 
+        }
+    }
+}
+
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main() {
+    public static void main(String[] args) {
+        Printable p = new PrinterProxy("Alice"); 
+        System.out.println("이름은 현재 " + p.getPrinterName() + "입니다."); 
+        p.setPrinterName("Bob"); 
+        System.out.println("이름은 현재 " + p.getPrinterName() + "입니다."); 
+        p.print("Hello, world."); 
+    }
+}
+```
 
 
 ***
