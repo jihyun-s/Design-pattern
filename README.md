@@ -11,6 +11,8 @@
 * [Facade](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#facade) 
 * [Flyweight](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#flyweight)
 * [Proxy](https://github.com/jihyun-s/Design-pattern#proxy)
+* [Chain of Responsibility]() 
+* [Command]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -1608,7 +1610,375 @@ public class Main() {
     }
 }
 ```
+***
 
+## Chain of Responsibility
+책임 떠넘기기
+
+
+### 사용 목적과 용도
+어떤 요청이 발생했을 때 그 요청을 처리할 객체를 직접 결정할 수 없는 경우 복수의 객체를 사슬(chain)처럼 연결해 두면 그 객체의 사슬을 차례로 돌아다니면서 목적한 객체를 결정하는 방법. 요청과 처리의 연결을 유연하게 해서 각 객체를 부품으로 독립시킬 수 있다. 
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/chain.png" width="70%" height="70%" title="Chain of Responsibility"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Trouble | 발생한 트러블을 나타내는 클래스. 트러블 번호(number)를 가진다. 
+Support | 트러블을 해결하는 추상 클래스 
+NoSupport | 트러블을 해결하는 구상 클래스 (항상 처리하지 않는다) 
+LimitSupport | 트러블을 해결하는 구상 클래스 (지정한 번호 미만의 트러블을 해결) 
+OddSupport | 트러블을 해결하는 구상 클래스 (홀수 번호의 트러블을 해결) 
+SpecialSupport | 트러블을 해결하는 구상 클래스 (특정 번호의 트러블을 해결) 
+Main | Support들의 사슬을 만들고 트러블을 발생시키는 동작 테스트용 클래스 
+
+
+* Trouble 클래스 (Trouble.java) 
+```
+public class Trouble {
+    private int number;             // 트러블 번호 
+    public Trouble(int number) {    // 트러블의 생성 
+        this.number = number; 
+    }
+    public int getNumber() {        // 트러블 번호를 얻는다. 
+        return number; 
+    }
+    public String toString() {      // 트러블의 문자열 표현 
+        return "[Trouble " + number + "]"; 
+    }
+}
+```
+
+
+* Support 클래스 (Support.java) 
+```
+public abstract class Support {
+    private String name;                  // 이 트러블 해결자의 이름 
+    private Support next;                 // 떠넘기는 곳 
+    public Support(String name) {         // 트러블 해결자의 생성
+        this.name = name; 
+    }
+    public Support setNext(Support next) {      // 떠넘기는 곳을 설정 
+        this.next = next; 
+        return next; 
+    }
+    public final void support(Trouble trouble) {      // 트러블 해결의 수순 
+        if(resolve(trouble)) {
+            done(trouble); 
+        } else if (next != null) {
+            next.support(trouble); 
+        } else {
+            fail(trouble); 
+        }
+}
+```
+
+
+* NoSupport 클래스 (NoSupport.java) 
+```
+public class NoSupport extends Support {
+    public NoSupport(String name) {
+        super(name); 
+    }
+    protected boolean resolve(Trouble trouble) {      // 해결용 메소드 
+        return false;                                 // 아무것도 처리하지 않음
+    }
+}
+```
+
+
+* LimitSupport 클래스 (LimitSupport.java) 
+```
+public class LimitSupport extends Support {
+    private int limit;                             // 이 번호 미만이면 해결
+    public LimitSupport(String name, int limit) {  // 생성자
+        super(name); 
+        this.limit = limit;
+    }
+    protected boolean resolve(Trouble trouble) {      // 해결용 메서드 
+        if (trouble.getNumber() < limit) {
+            return true;
+        } else {
+            return false; 
+        }
+    }
+}
+```
+
+
+* OddSupport 클래스 (OddSupport.java) 
+```
+public class OddSupport extends Support {
+    public OddSupport (String name) {
+        super(name);
+    }
+    protected boolean resolve(Trouble trouble) {         // 해결용 메서드 
+        if (trouble.getNumber() % 2 == 1) {
+            return true;
+        } else {
+            return false;
+        }
+}
+```
+
+
+* SpecialSupport 클래스 (SpecialSupport.java) 
+```
+public class SpecialSupport extends Support {
+    private int number;                                  // 이 번호만 해결할 수 있다 
+    public SpecialSupport(String name, int number) {
+        super(name); 
+        this.number = number; 
+    }
+    protected boolean resolve(Trouble trouble) {         // 해결용 메서드
+        if (trouble.getName() == number) {
+            return true;
+        } else {
+            return false; 
+        }
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        Support alice = new NoSupport("Alice"); 
+        Support bob   = new LimitSupport("Bob", 100); 
+        Support charlie = new SpecialSupport("Charlie", 429); 
+        Support diana = new LimitSupport("Diana", 200); 
+        Support elmo = new OddSupport("Elmo"); 
+        Support fred = new LimitSupport("Fred", 300); 
+        // 사슬의 형성 
+        alice.setNext(bob).setNext(charlie).setNext(diana).setNext(elmo).setNext(fred); 
+        // 다양한 트러블 발생 
+        for (int i = 0; i < 500; i += 33) {
+            alice.support(new Trouble(i)); 
+        }
+    }
+}
+```
+
+
+
+***
+
+## Command
+명령을 클래스로 표현하기 
+
+
+### 사용 목적과 용도
+
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/command.png" width="70%" height="70%" title="Proxy"></img>
+
+
+### 구현 코드
+패키지 | 이름 | 용도 
+--|--|-- 
+Command | Command | 명령을 표현하는 인터페이스 
+Command | MacroCommand | 복수의 명령을 모은 명령을 표현하는 클래스 
+drawer | DrawCommand | 점 그리기 명령을 표현하는 클래스 
+drawer | Drawable | 그리기 대상을 표현하는 인터페이스 
+drawer | DrawCanvas | 그리기 대상을 구현하는 클래스 
+
+
+* Command 인터페이스 (Command.java) 
+```
+package command; 
+
+public interface Command { 
+    public abstract void execute(); 
+}
+```
+
+
+* MacroCommand 클래스 (MacroCommand.java) 
+```
+package command; 
+
+import java.util.Stack; 
+import java.util.Iterator; 
+
+public class MacroCommand implements Command {
+    // 명령의 집합
+    private Stack commands = new Stack(); 
+    // 실행 
+    public void execute() {
+        Iterator it = commands.iterator(); 
+        while (it.hasNext()) 
+            ((Command)it.next()).execute(); 
+    }
+    // 추가 
+    public void append(Command cmd) {
+        if (cmd != this) 
+            commands.push(cmd);
+    }
+    // 마지막 명령을 삭제 
+    public void undo() {
+        if (!commands.empty()) 
+            commands.pop();
+    }
+    // 전부 삭제 
+    public void clear() {
+        commands.clear();
+    }
+}
+```
+
+
+
+* DrawCommand 클래스 (DrawCommand.java) 
+```
+package drawer; 
+
+import command.Command; 
+import java.awt.Point; 
+
+public class DrawCommand implements Command {
+    // 그림 그리는 대상 
+    protected Drawable drawable; 
+    // 그림 그리는 위치 
+    private Point position; 
+    // 생성자 
+    public DrawCommand (Drawable drawable, Point position) {
+        this.drawable = drawable; 
+        this.position = position;
+    }
+    // 실행 
+    public void execute() {
+        drawable.draw(position.x, position.y); 
+    }
+}
+```
+
+
+* Drawable 인터페이스 (Drawable.java)
+```
+package drawer; 
+
+public interface Drawable {
+    public abstract void draw (int x, int y); 
+}
+```
+
+
+
+* DrawCanvas 클래스 (DrawCanvas.java)
+```
+package drawer; 
+
+import command.*; 
+
+import java.util.*; 
+import java.awt.*; 
+import java.awt.event.*; 
+import javax.swing.*; 
+
+public class DrawCanvas extends Canvas implements Drawable {
+    // 그림 그리는 색 
+    private Color color = Color.red; 
+    // 그림 그리는 점의 반경 
+    private int radius = 6; 
+    // 이력 
+    private MacroCommand history; 
+    // 생성자
+    public DrawCanvas(int width, int height, MacroCommand history) {
+        setSize(width, height); 
+        setBackground(Color.white); 
+        this.history = history; 
+    }
+    // 이력 전체를 다시 그리기 
+    public void paint(Graphics g) {
+        history.execute(); 
+    }
+    // 그림 그리기 
+    public void draw(int x, int y) {
+        Graphics g = getGraphics(); 
+        g.setColor(color); 
+        g.fillOval(x - radius, y - radius, radius * 2, radius * 2); 
+    }
+}
+
+```
+
+
+* Main 클래스 (Main.java) 
+```
+import command.*; 
+import drawer.*; 
+
+import java.awt.*; 
+import java.awt.event.*; 
+import javax.swing.*; 
+
+public class Main extends JFrame implements ActionListener, MouseMotionListener, WindowListener {
+    // 그림 그린 이력 
+    private MacroCommand history = new MacroCommand(); 
+    // 그림 그리는 영역 
+    private DrawCanvas canvas = new DrawCanvas(400, 400, history); 
+    // 제거 버튼
+    private JButton clearButton = new JButton("clear"); 
+    
+    // 생성자 
+    public Main(String title) {
+        super(title); 
+        
+        this.addWindowListener(this); 
+        canvas.addMouseMotionListener(this); 
+        clearButton.addActionListener(this);
+        
+        Box buttonBox = new Box(BoxLayout.X_AXIS); 
+        buttonBox.add(clearButton); 
+        Box mainBox = new Box(BoxLayout.Y_AXIS); 
+        mainBox.add(buttonBox); 
+        mainBox.add(canvas);
+        getContentPane().add(mainBox); 
+        
+        pack();
+        show();
+    }
+    
+    // ActionListener용 
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == clearButton) {
+            history.clear(); 
+            canvas.repaint(); 
+        }
+    }
+    
+    // MouseMotionListener용 
+    public void mouseMoved(MouseEvent e) {
+    }
+    public void mouseDragged(MouseEvent e) {
+        Command cmd = new DrawCommand(canvas, e.getPoint());
+        history.append(cmd);
+        cmd.execute();
+    }
+    
+    // WindowListener용
+    public void windowClosing(WindowEvent e) {
+        System.exit(0);
+    }
+    public void windowActivated(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {} 
+    public void windowIconified(WindowEvent e) {} 
+    public void windowOpened(WindowEvent e) {}
+    
+    public static void main(String[] args) {
+        new Main("Command Pattern Sample"); 
+    }
+}
+```
 
 ***
 ## Reference 
