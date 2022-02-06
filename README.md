@@ -13,6 +13,7 @@
 * [Proxy](https://github.com/jihyun-s/Design-pattern#proxy)
 * [Chain of Responsibility]() 
 * [Command]()
+* [Interpreter]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -1979,6 +1980,251 @@ public class Main extends JFrame implements ActionListener, MouseMotionListener,
     }
 }
 ```
+
+
+***
+
+## Interpreter
+문법규칙을 클래스로 표현하기 
+
+
+### 사용 목적과 용도
+프로그램이 해결하려는 문제를 간단한 명령으로 표현. 명령을 해석, 실행하는 interpreter 프로그램 작성하여 사용. (재사용성 높임) 
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/interpreter.png" width="65%" height="65%" title="Proxy"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Node | 구문 트리의 노드가 되는 클래스 
+ProgramNode | program 에 대응하는 클래스
+CommandListNode | command list 에 대응하는 클래스
+CommandNode | command 에 대응하는 클래스 
+RepeatCommandNode | repeat command 에 대응하는 클래스 
+PrimitiveCommandNode | primitive command 에 대응하는 클래스 
+Context | 구문해석을 위한 전후 관계를 나타내는 클래스 
+ParseException | 구문해석 중의 예외 클래스 
+
+
+
+* Node 클래스 (Node.java)
+```
+public abstract class Node {
+    public abstract void parse(Context context) throws ParseException;
+}
+```
+
+
+* ProgramNode 클래스 (ProgramNode.java) 
+```
+// <program> ::= program <command list> 
+public class ProgramNode extends Node {
+    private Node commandListNode; 
+    public void parse(Context context) throws ParseException {
+        context.skipToken("program");
+        commandListNode = new CommandListNode();
+        commandListNode.parse(context);
+    }
+    public String toString() {
+        return "[program " + commandListNode + "]"; 
+    }
+}
+```
+
+
+* CommandListNode 클래스 (CommandListNode.java) 
+```
+import java.util.ArrayList;
+
+// <command list> ::= <command>* end
+public class CommandListNode extends Node {
+    private ArrayList list = new ArrayList(); 
+    public void parse(Context context) throws ParseException {
+        while (true) {
+            if (context.currentToken() == null) {
+                throw new ParseException("Missing 'end'"); 
+            } else if (context.currentToken().equals("end")) {
+                context.skipToken("end"); 
+                break;
+            } else {
+                Node commandNode = new CommandNode(); 
+                commandNode.parse(context); 
+                list.add(commandNode); 
+            }
+        }
+    }
+    public String toString() {
+        return list.toString();
+    }
+}
+```
+
+
+* CommandNode 클래스 (CommandNode.java)
+```
+// <command> ::= <repeat command> | <primitive command> 
+public class CommandNode extends Node {
+    private Node node; 
+    public void parse(Context context) throws ParseException {
+        if(context.currentToken().equals("repeat")) {
+            node = new RepeatCommandNode(); 
+            node.parse(context); 
+        } else {
+            node = new PrimitiveCommandNode(); 
+            node.parse(context); 
+        }
+    }
+    public String toString() {
+        return node.toString(); 
+    }
+}
+```
+
+
+* RepeatCommandNode 클래스 (RepeatCommandNode.java) 
+```
+// <repeat command> ::= repeat <number> <command list> 
+public class RepeatCommandNode extends Node {
+    private int number; 
+    private Node commandListNode; 
+    public void parse(Context context) throws ParseException {
+        context.skipToken("repeat"); 
+        number = context.currentNumber(); 
+        context.nextToken(); 
+        commandListNode = new CommandListNode();
+        commandListNode.parse(context); 
+    }
+    public String toString() {
+        return "[repeat " + number + " " + commandListNode + "]";
+    }
+}
+```
+
+
+* PrimitiveCommandNode 클래스 (PrimitiveCommandNode.java) 
+```
+// <primitive command> ::= go | right | left 
+public class PrimitiveCommandNode extends Node {
+    private String name; 
+    public void parse(Context context) throws ParseException {
+        name = context.currentToken(); 
+        context.skipToken(name); 
+        if(!name.equals("go") && !name.equals("right") && !name.equals("left")) {
+            throw new ParseException(name + " is undefined");
+        }
+    }
+    public String toString() {
+        return name;
+    }
+}
+```
+
+
+
+* Context 클래스 (Context.java) 
+
+
+이름 | 용도
+--|--
+nextToken | 다음 토큰을 얻는다 (다음 토큰으로 진행) 
+currentToken | 현재 토큰을 얻는다 (다음 토큰으로 진행하지 않는다) 
+skipToken | 현재 토큰을 검사한 후, 다음 토큰을 얻는다 (다음 토큰으로 진행) 
+currentNumber | 현재 토큰을 수치로 얻는다 (다음 토큰으로 진행하지 않는다) 
+
+
+```
+import java.util.*; 
+
+public class Context {
+    private StringTokenizer tokenizer; 
+    private String currentToken; 
+    public Context(String text) {
+        tokenizer = new StringTokenizer(text); 
+        nextToken();
+    }
+    public String nextToken() {
+        if (tokenizer.hasMoreTokens()) {
+            currentToken = tokenizer.nextToken(); 
+        } else {
+            currentToken = null;
+        }
+        return currentToken;
+    }
+    public String currentToken() {
+        return currentToken;
+    }
+    public void skipToken(String token) throws ParseException {
+        if(!token.equals(currentToken)) {
+            throw new ParseException("Warning: " + token + " is expected, but " + currentToken + " is found."); 
+        }
+        nextToken();
+    }
+    public int currentNumber() throws ParseException {
+        int number = 0; 
+        try {
+            number = Integer.parseInt(currentToken); 
+        } catch (NumberFormatException e) {
+            throw new ParseException("Warning: " + e);
+        }
+        return number;
+    }
+}
+```
+
+
+
+* ParseException 클래스 (ParseException.java)
+```
+public class ParseException extends Exception {
+    public ParseException(String msg) {
+        super(msg);
+    }
+}
+```
+
+
+
+* Main 클래스 (Main.java) 
+```
+import java.util.*; 
+import java.io.*; 
+
+public class Main {
+    public static void main(String[] args) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("program.txt"));
+            String text; 
+            while((text = reader.getLine()) != null) {
+                Systme.out.println("text=\"" + text + "\"");
+                Node node = new ProgramNode();
+                node.parse(new Context(text)); 
+                System.out.println("node = " + node); 
+            }
+        } catch (Exception e) {
+            e.printStackTree();
+        }
+    }
+}
+```
+
+
+* program.txt 
+```
+program end
+program go end
+program go right go right go right go right end
+program repeat 4 go right end end 
+program repeat 4 repeat 3 go right go left end right end end 
+```
+
+
+
+
+
+
 
 ***
 ## Reference 
