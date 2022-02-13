@@ -14,6 +14,7 @@
 * [Chain of Responsibility]() 
 * [Command]()
 * [Interpreter]()
+* [Iterator]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -2222,6 +2223,130 @@ program repeat 4 repeat 3 go right go left end right end end
 
 
 
+***
+
+## Iterator
+순서대로 지정해서 처리하기
+
+
+### 사용 목적과 용도
+순서대로 지정하면서 전체를 검색하는 처리를 위한 것
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/iterator.png" width="55%" height="55%" title="Proxy"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Aggregate | 집합체를 나타내는 인터페이스 
+Iterator | 하나씩 나열하면서 검색을 실행하는 인터페이스 
+Book | 책을 나타내는 클래스 
+BookShelf | 서가를 나타내는 클래스 
+BookShelfIterator | 서가를 검색하는 클래스 
+
+
+* Aggregate 인터페이스 (Aggregate.java) 
+```
+public interface Aggregate {
+    public abstract Iterator iterator(); 
+}
+```
+
+
+* Iterator 인터페이스 (Iterator.java)
+```
+public interface Iterator {
+    public abstract boolean hasNext(); 
+    public abstract Object next();
+}
+```
+
+
+* Book 클래스 (Book.java)
+```
+public class Book {
+    private String name; 
+    public Book(String name) {
+        this.name = name; 
+    }
+    public String getName() {
+        return name; 
+    }
+}
+
+```
+
+
+* Bookshelf 클래스 (BookShelf.java)
+```
+public class BookShelf implements Aggregate {
+    private Book[] books; 
+    private Int last = 0; 
+    public BookShelf(int maxsize) {
+        this.books = new Book[maxsize];
+    }
+    public Book getBookAt(int index) {
+        return books[index];
+    }
+    public void appendBook(Book book) {
+        this.books[last] = book; 
+        last++;
+    }
+    public int getLength() {
+        return last;
+    }
+    public Iterator iterator() {
+        return new BookShelfIterator(this);
+    }
+}
+```
+
+
+
+* BookShelfIterator 클래스 (BookShelfIterator.java) 
+```
+public class BookShelfIterator implements Iterator {
+    private BookShelf bookShelf; 
+    private int index; 
+    public BookShelfIterator(BookShelf bookShelf) {
+        this.bookShelf = bookShelf; 
+        this.index = 0;
+    }
+    public boolean hasNext() {
+        if(index < bookShelf.getLength()) {
+            return true; 
+        } else {
+            return false;
+        }
+    }
+    public Object next() {
+        Book book = bookShelf.getBookAt(index); 
+        index++; 
+        return book;
+    }
+}
+```
+
+
+* Main 클래스 (Main.java)
+```
+public class Main {
+    public static void main(String[] args) {
+        BookShelf bookShelf = new BookShelf(4); 
+        bookShelf.appendBook(new Book("Around the Word in 80 Days")); 
+        bookShelf.appendBook(new Book("Bible")); 
+        bookShelf.appendBook(new Book("Cinderella"));
+        bookShelf.appendBook(new Book("Daddy-Long-Legs"));
+        Iterator it = bookShelf.iterator(); 
+        while(it.hasNext()) {
+            Book book = (Book)it.next(); 
+            System.out.println(book.getName()); 
+        }
+    }
+}
+```
 
 
 
