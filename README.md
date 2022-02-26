@@ -15,6 +15,8 @@
 * [Command]()
 * [Interpreter]()
 * [Iterator]()
+* [Observer]() 
+* [Template Method]()
 * [Reference](https://github.com/jihyun-s/Design-pattern/blob/main/README.md#reference)
 
 
@@ -2348,7 +2350,255 @@ public class Main {
 }
 ```
 
+***
 
+## Observer
+상태의 변화를 알려주기 
+
+
+### 사용 목적과 용도
+관찰 대상의 상태가 변화하면 관찰자에게 알려줌. 상태 변화에 따른 처리를 기술할 때 효과적 
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/command.png" width="70%" height="70%" title="Observer"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+Observer | 관찰자를 나타내는 인터페이스
+NumberGenerator | 수를 생성하는 오브젝트를 나타내는 클래스
+RandomNumberGenerator | 랜덤으로 수를 생성하는 클래스
+DigitObserver | 숫자로 수를 표시하는 클래스
+GraphObserver | 간이 그래프로 수를 표시하는 클래스 
+
+
+* Observer 인터페이스 (Observer.java)
+```
+public interface Observer {
+    public abstract void update(NumberGenerator generator);
+}
+```
+
+
+* NumberGenerator 클래스 (NumberGenerator.java) 
+```
+import java.util.ArrayList; 
+import java.util.Iterator; 
+
+public abstract class NumberGenerator {
+    private ArrayList observers = new ArrayList(); // Observer를 저장 
+    public void addObserver(Observer observer) { // Observer를 추가 
+        observers.add(observer);
+    }
+    public void deleteObserver(Observer observer) { // Observer를 삭제 
+        observers.remove(observer);
+    }
+    public void notifyObservers() {                // Observer에 알림
+        Iterator it = observers.iterator(); 
+        while (it.hasNext()) {
+            Observer o = (Observer)it.next(); 
+            o.update(this);
+        }
+    }
+    public abstract int getNumber();               // 수를 취득한다. 
+    public abstract void execute();                // 수를 생성한다. 
+}
+```
+
+
+* RandomNumberGenerator 클래스 (RandomNumberGenerator.java)
+```
+import java.util.Random; 
+
+public class RandomNumberGenerator extends NumberGenerator {
+    private Random random = new Random();    // 난수발생기 
+    private int number;                      // 현재의 수
+    public int getNumber() {                 // 수를 취득한다. 
+        return number;
+    }
+    public void execute() {
+        for (int i=0; i<20; i++) {
+            number = random.nextInt(50); 
+            notifyObservers(); 
+        }
+    }
+}
+
+```
+
+
+
+* DigitObserver 클래스 (DigitObserver.java)
+```
+public class DigitObserver implements Observer {
+    public void update(NumberGenerator generator) {
+        System.out.println("DigitObserver: " + generator.getNumber()); 
+        try {
+            Thread.sleep(100);
+        } catch (InterruptException e) {
+        }
+    }
+}
+```
+
+
+* GraphObserver 클래스 (GraphObserver.java) 
+```
+public class GraphObserver implements Observer {
+    public void update(NumberGenerator generator) {
+        System.out.println("GraphObserver:"); 
+        int count = generator.getNumber(); 
+        for (int i=0; i<count; i++) {
+            System.out.println("*");
+        }
+        System.out.println(" "); 
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+    }
+}
+```
+
+
+* Main 클래스 (Main.java)
+```
+public class Main {
+    public static void main(String[] args) {
+        NumberGenerator generator = new RandomNumberGenerator(); 
+        Observer observer1 = new DigitObserver(); 
+        Observer observer2 = new GraphObserver(); 
+        generator.addObserver(observer1); 
+        generator.addObserver(observer2); 
+        generator.execute(); 
+    }
+}
+```
+
+***
+
+## Template Method
+하위 클래스에서 구체적으로 처리하기  
+
+
+### 사용 목적과 용도
+상위 클래스에서 처리의 뼈대를 결정하고 하위 클래스에서 구체적인 내용을 결정 
+
+
+### 클래스 다이어그램
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/command.png" width="70%" height="70%" title="Template Method"></img>
+
+
+### 구현 코드
+이름 | 용도 
+--|-- 
+AbstractDisplay | 메소드 display만 구현되고 있는 추상 클래스
+CharDisplay | 메소드 open, print, close를 구현하고 있는 클래스 
+StringDisplay | 메소드 open, print, close를 구현하고 있는 클래스
+
+
+
+* AbstractDisplay 클래스 (AbstractDisplay.java)
+```
+public abstract class AbstractDisplay {
+    public abstract void open(); 
+    public abstract void print(); 
+    public abstract void close(); 
+    public final void display() {
+        open(); 
+        for(int i=0; i<5; i++) {
+            print();
+        }
+        close(); 
+    }
+}
+```
+
+
+* CharDisplay 클래스 (CharDisplay.java) 
+
+메소드 이름 | 처리 
+--|--
+open | 문자열 "<<"을 표시한다 
+print | 생성자에서 주어진 1문자를 표시한다 
+close | 문자열 ">>"을 표시한다 
+
+
+```
+public class CharDisplay extends AbstractDisplay {
+    private char ch; 
+    public CharDisplay(char ch) {
+        this.ch = ch;
+    }
+    public void open() {
+        System.out.print("<<"); 
+    }
+    public void print() {
+        System.out.print(ch);
+    }
+    public void close() {
+        System.out.println(">>"); 
+    }
+}
+```
+
+
+* StringDisplay 클래스 (StringDisplay.java)
+
+
+메소드 이름 | 처리 
+--|--
+open | 문자열 "+----+"을 표시한다 
+print | 생성자에서 주어진 문자열을 "|"와 "|" 사이에 표시한다 
+close | 문자열 "+----+"을 표시한다 
+
+
+```
+public class StringDisplay extends AbstractDisplay {
+    private String string; 
+    private int width; 
+    public StringDisplay(String string) {
+        this.string = string; 
+        this.width = string.getBytes().length;
+    }
+    public void open() {
+        printLine();
+    }
+    public void print() {
+        System.out.println("|" + string + "|"); 
+    }
+    public void close() {
+        printLine(); 
+    }
+    private void printLine() {
+        System.out.print("+"); 
+        for (int i=0; i<width; i++) {
+            System.out.print("-"); 
+        }
+        System.out.println("+");
+    }
+}
+```
+
+
+* Main 클래스 (Main.java) 
+```
+public class Main {
+    public static void main(String[] args) {
+        // 'H'를 가진 CharDisplay 인스턴스 1개 
+        AbstractDisplay d1 = new CharDisplay('H'); 
+        // "Hello, world." 를 가진 StringDisplay의 인스턴스 1개 
+        AbstractDisplay d2 = new StringDisplay("Hello, world."); 
+        // "안녕하세요."를 가진 StringDisplay의 인스턴스 1개
+        AbstractDisplay d3 = new StringDisplay("안녕하세요."); 
+        d1.display(); // d1,d2,d3 모두 같은 AbstractDisplay의 하위 클래스의 인스턴스이기 때문에 
+        d2.display(); // 상속한 display 메소드를 호출할 수 있다. 
+        d3.display(); // 실제 동작은 CharDisplay나 StringDisplay에서 결정한다. 
+    }
+}
+```
 
 
 ***
