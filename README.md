@@ -2361,7 +2361,7 @@ public class Main {
 
 
 ### 클래스 다이어그램
-<img src="https://github.com/jihyun-s/Design-pattern/blob/main/command.png" width="70%" height="70%" title="Observer"></img>
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/observer.png" width="50%" height="50%" title="Observer"></img>
 
 
 ### 구현 코드
@@ -2488,7 +2488,7 @@ public class Main {
 
 
 ### 클래스 다이어그램
-<img src="https://github.com/jihyun-s/Design-pattern/blob/main/command.png" width="70%" height="70%" title="Template Method"></img>
+<img src="https://github.com/jihyun-s/Design-pattern/blob/main/templateMethod.png" width="20%" height="20%" title="Template Method"></img>
 
 
 ### 구현 코드
